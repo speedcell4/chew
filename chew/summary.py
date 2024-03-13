@@ -1,12 +1,12 @@
+import asyncio
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Set, Tuple, Type
+from typing import Any, Dict, List, Set, Tuple, Type
 
 import torch
 from tabulate import tabulate
-from tqdm import tqdm
 
-from chew.serde import ARGS_FILENAME, SOTA_FILENAME, load_args, load_sota
+from chew.serde import load_all
 
 logger = getLogger(__name__)
 
@@ -14,29 +14,6 @@ LOG_FILENAME = 'log.txt'
 
 SUMMARY_IGNORES = ('study', 'device', 'seed', 'hostname', 'port', 'checkpoint')
 SUMMARY_IGNORES = SUMMARY_IGNORES + tuple(f'co-{ignore}' for ignore in SUMMARY_IGNORES)
-
-
-def iter_dir(path: Path) -> Iterable[Path]:
-    for path in tqdm(path.iterdir()):
-        if path.is_dir():
-            if (path / ARGS_FILENAME).exists() and (path / SOTA_FILENAME).exists():
-                yield path
-            else:
-                yield from iter_dir(path)
-
-
-def fetch_one(out_dir: Path):
-    args = load_args(out_dir=out_dir)
-    sota = load_sota(out_dir=out_dir)
-
-    return {**args, 'path': out_dir / LOG_FILENAME}, sota
-
-
-def fetch_all(paths: List[Path]):
-    return zip(*[
-        fetch_one(out_dir=out_dir)
-        for path in paths for out_dir in iter_dir(path)
-    ])
 
 
 def frozen(item: Any) -> Any:
@@ -103,7 +80,7 @@ def summary(path: List[Path], metrics: Tuple[str, ...],
             margin: Type[margin_data] = margin_data, sort: Type[sort_data] = sort_data,
             ignore: Tuple[str, ...] = SUMMARY_IGNORES,
             common: bool = False, expand: bool = False, fmt: str = 'pretty'):
-    args, sota = fetch_all(path)
+    args, sota = asyncio.run(load_all(path))
 
     if not expand:
         ignore = (*ignore, 'path')
