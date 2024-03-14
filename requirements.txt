@@ -1,6 +1,5 @@
-torch
-tabulate
-tqdm
-aku
 setuptools
+aku
 orjson
+tabulate
+numpy

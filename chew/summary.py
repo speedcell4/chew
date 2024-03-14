@@ -3,7 +3,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple, Type
 
-import torch
+import numpy
 from tabulate import tabulate
 
 from chew.serde import load_all
@@ -46,8 +46,8 @@ def group_keys(keys: Set[str], args: List[Dict[str, Any]]):
 
 
 def reduce_metric(metrics: List[Tuple[float, ...]]):
-    metrics = torch.tensor(metrics, dtype=torch.float32)
-    return [round(m, 2) for m in metrics.mean(dim=0).detach().tolist()]
+    metrics = numpy.array(metrics, dtype=numpy.float32)
+    return [round(m, 2) for m in metrics.mean(axis=0).tolist()]
 
 
 def margin_data(margin: Tuple[str, ...] = (), *, data, headers, metrics):
