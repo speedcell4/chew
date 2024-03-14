@@ -1,10 +1,10 @@
 import asyncio
-import json
 from concurrent.futures import ThreadPoolExecutor
-from json import JSONDecodeError
 from logging import getLogger
 from pathlib import Path
 from typing import Any, List
+
+import orjson
 
 logger = getLogger(__name__)
 
@@ -17,19 +17,19 @@ def load_json(path: Path) -> Any:
     with path.open(mode='r', encoding='utf-8') as fp:
         for _ in range(5):
             try:
-                return json.load(fp=fp)
-            except JSONDecodeError:
+                return orjson.loads(fp.read())
+            except orjson.JSONDecodeError:
                 pass
 
-    raise JSONDecodeError
+    raise orjson.JSONDecodeError
 
 
-def load_args(out_dir: Path, name: str = ARGS_FILENAME) -> Any:
-    return load_json(path=out_dir / name)
+def load_args(out_dir: Path) -> Any:
+    return load_json(path=out_dir / ARGS_FILENAME)
 
 
-def load_sota(out_dir: Path, name: str = SOTA_FILENAME) -> Any:
-    return load_json(path=out_dir / name)
+def load_sota(out_dir: Path) -> Any:
+    return load_json(path=out_dir / SOTA_FILENAME)
 
 
 def iter_dir(paths: List[Path]) -> List[Path]:

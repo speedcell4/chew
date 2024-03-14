@@ -3,3 +3,4 @@ tabulate
 tqdm
 aku
 setuptools
+orjson
