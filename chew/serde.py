@@ -1,11 +1,8 @@
-import asyncio
 from logging import getLogger
 from pathlib import Path
 from typing import Any, List
 
 import orjson
-
-from chew.utils import to_thread
 
 logger = getLogger(__name__)
 
@@ -33,22 +30,24 @@ def load_sota(out_dir: Path) -> Any:
     return load_json(path=out_dir / SOTA_FILENAME)
 
 
-async def load(out_dir: Path):
-    try:
-        args = await to_thread(load_args, out_dir)
-        sota = await to_thread(load_sota, out_dir)
+def load(out_dir: Path):
+    args = load_args(out_dir)
+    sota = load_sota(out_dir)
 
-        return {**args, 'path': out_dir / LOG_FILENAME}, sota
-    except FileNotFoundError:
-        return None
+    return {**args, 'path': out_dir / LOG_FILENAME}, sota
 
 
-async def load_all(paths: List[Path]):
-    futures = [
-        load(out_dir)
-        for path in paths for out_dir in path.iterdir()
-        if out_dir.is_dir()
-    ]
-    data = await asyncio.gather(*futures)
+def load_all(paths: List[Path]):
+    args, sota = [], []
 
-    return zip(*[datum for datum in data if datum])
+    for path in paths:
+        for out_dir in path.iterdir():
+            if out_dir.is_dir():
+                try:
+                    a, s = load(out_dir)
+                    args.append(a)
+                    sota.append(s)
+                except FileExistsError:
+                    pass
+
+    return args, sota

@@ -1,4 +1,3 @@
-import asyncio
 from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple, Type
@@ -80,7 +79,7 @@ def summary(path: List[Path], metrics: Tuple[str, ...],
             margin: Type[margin_data] = margin_data, sort: Type[sort_data] = sort_data,
             ignore: Tuple[str, ...] = SUMMARY_IGNORES,
             common: bool = False, expand: bool = False, fmt: str = 'pretty'):
-    args, sota = asyncio.run(load_all(path))
+    args, sota = load_all(path)
 
     if not expand:
         ignore = (*ignore, 'path')
