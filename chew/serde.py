@@ -47,7 +47,7 @@ def load_all(paths: List[Path]):
                     a, s = load(out_dir)
                     args.append(a)
                     sota.append(s)
-                except FileExistsError:
+                except FileNotFoundError:
                     pass
 
     return args, sota
