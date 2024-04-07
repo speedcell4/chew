@@ -1,3 +1,4 @@
+import json
 from logging import getLogger
 from pathlib import Path
 from typing import Any, List
@@ -19,7 +20,12 @@ def load_json(path: Path) -> Any:
             except orjson.JSONDecodeError:
                 pass
 
-    raise orjson.JSONDecodeError
+        try:
+            return json.load(fp)
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError(f'{path} is not a valid JSON')
 
 
 def load_args(out_dir: Path) -> Any:
@@ -47,7 +53,7 @@ def load_all(paths: List[Path]):
                     a, s = load(out_dir)
                     args.append(a)
                     sota.append(s)
-                except FileNotFoundError:
+                except (ValueError, FileNotFoundError):
                     pass
 
     return args, sota
