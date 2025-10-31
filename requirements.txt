@@ -1,5 +1,0 @@
-setuptools
-aku
-orjson
-tabulate
-numpy
