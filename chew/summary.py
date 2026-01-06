@@ -9,10 +9,7 @@ from chew.serde import load_all
 
 logger = getLogger(__name__)
 
-LOG_FILENAME = 'log.txt'
-
-SUMMARY_IGNORES = ('study', 'device', 'seed', 'hostname', 'port', 'checkpoint')
-SUMMARY_IGNORES = SUMMARY_IGNORES + tuple(f'co-{ignore}' for ignore in SUMMARY_IGNORES)
+IGNORE = ('study', 'device', 'seed', 'hostname', 'port', 'checkpoint')
 
 
 def frozen(item: Any) -> Any:
@@ -75,9 +72,8 @@ def sort_data(sort: Tuple[str, ...] = (), *, data, headers, metrics):
     return list(sorted(data, key=lambda datum: [datum[index] for index in indices]))
 
 
-def summary(path: List[Path], metrics: Tuple[str, ...],
-            margin: Type[margin_data] = margin_data, sort: Type[sort_data] = sort_data,
-            ignore: Tuple[str, ...] = SUMMARY_IGNORES,
+def summary(path: List[Path], metrics: Tuple[str, ...], margin: Type[margin_data] = margin_data,
+            sort: Type[sort_data] = sort_data, ignore: Tuple[str, ...] = IGNORE,
             common: bool = False, expand: bool = False, fmt: str = 'pretty'):
     args, sota = load_all(path)
 
