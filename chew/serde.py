@@ -1,9 +1,8 @@
 import json
+from json import JSONDecodeError
 from logging import getLogger
 from pathlib import Path
 from typing import Any, List
-
-import orjson
 
 logger = getLogger(__name__)
 
@@ -12,18 +11,13 @@ ARGS_FILENAME = 'args.json'
 SOTA_FILENAME = 'sota.json'
 
 
-def load_json(path: Path) -> Any:
+def load_json(path: Path, num_retries: int = 5) -> Any:
     with path.open(mode='r', encoding='utf-8') as fp:
-        for _ in range(5):
+        for _ in range(num_retries):
             try:
-                return orjson.loads(fp.read())
-            except orjson.JSONDecodeError:
+                return json.load(fp)
+            except JSONDecodeError:
                 pass
-
-        try:
-            return json.load(fp)
-        except json.JSONDecodeError:
-            pass
 
     raise ValueError(f'{path} is not a valid JSON')
 
