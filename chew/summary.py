@@ -46,7 +46,7 @@ def reduce_metric(metrics: List[Tuple[float, ...]]):
     return [round(m, 2) for m in metrics.mean(axis=0).tolist()]
 
 
-def margin_data(margin: Tuple[str, ...] = (), *, data, headers, metrics):
+def margin_data(margin: Tuple[str, ...] = (), *, fn, data, headers, metrics):
     if len(margin) == 0:
         return data
 
@@ -59,21 +59,21 @@ def margin_data(margin: Tuple[str, ...] = (), *, data, headers, metrics):
         groups.setdefault(sort_key, []).append(datum)
 
     return [
-        max(values, key=lambda datum: [datum[index] for index in metric_indices])
+        fn(values, key=lambda datum: [datum[index] for index in metric_indices])
         for values in groups.values()
     ]
 
 
-def sort_data(sort: Tuple[str, ...] = (), *, data, headers, metrics):
+def sort_data(sort: Tuple[str, ...] = (), *, reverse, data, headers, metrics):
     if len(sort) == 0:
         sort = metrics[::-1]
 
     indices = [headers.index(key) for key in sort]
-    return list(sorted(data, key=lambda datum: [datum[index] for index in indices]))
+    return list(sorted(data, key=lambda datum: [datum[index] for index in indices], reverse=reverse))
 
 
 def summary(path: List[Path], metrics: Tuple[str, ...], margin: Type[margin_data] = margin_data,
-            sort: Type[sort_data] = sort_data, ignore: Tuple[str, ...] = IGNORE,
+            sort: Type[sort_data] = sort_data, ignore: Tuple[str, ...] = IGNORE, reverse: bool = False,
             common: bool = False, expand: bool = False, fmt: str = 'pretty'):
     args, sota = load_all(path)
 
@@ -99,7 +99,7 @@ def summary(path: List[Path], metrics: Tuple[str, ...], margin: Type[margin_data
         ]
         headers = [*metrics, '@', *keys]
 
-        data = margin(data=data, headers=headers, metrics=metrics)
-        data = sort(data=data, headers=headers, metrics=metrics)
+        data = margin(data=data, headers=headers, metrics=metrics, fn=min if reverse else max)
+        data = sort(data=data, headers=headers, metrics=metrics, reverse=reverse)
 
         print(tabulate(tabular_data=data, headers=headers, tablefmt=fmt))
